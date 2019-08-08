@@ -42,8 +42,8 @@ public class PlayerMove : MonoBehaviour
     {
         adjustedMovementSpeed = movementSpeed;
 
-        Sprint();
-        Crouching();
+        //Sprint();
+        //Crouching();
         
         float horizInput = Input.GetAxis(horizontalInputName) * adjustedMovementSpeed;
         float vertInput = Input.GetAxis(verticalInputName) * adjustedMovementSpeed;
