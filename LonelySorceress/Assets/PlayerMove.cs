@@ -9,6 +9,9 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float movementSpeed;
     [SerializeField] private float sprintIncrease;
     [SerializeField] private float crouchDecrease;
+    [SerializeField] private float slopeForce;
+    [SerializeField] private float slopeForceRayLength;
+    [SerializeField] private float gravity;
 
 
     private CharacterController charController;
@@ -21,12 +24,13 @@ public class PlayerMove : MonoBehaviour
 
 
 
-
+    private Vector3 gravityVector;
     private bool isJumping;
     private float adjustedMovementSpeed;
 
     private void Awake()
     {
+        gravityVector.y = -gravity;
         charController = GetComponent<CharacterController>();
     }
 
@@ -36,6 +40,24 @@ public class PlayerMove : MonoBehaviour
         
     }
 
+    private bool OnSlope()
+    {
+        if (isJumping)
+        {
+            return false;
+        }
+
+        RaycastHit hit;
+
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, charController.height/2 * slopeForceRayLength))
+        {
+            if (hit.normal != Vector3.up)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
 
     private void PlayerMovement()
@@ -45,14 +67,24 @@ public class PlayerMove : MonoBehaviour
         //Sprint();
         //Crouching();
         
-        float horizInput = Input.GetAxis(horizontalInputName) * adjustedMovementSpeed;
-        float vertInput = Input.GetAxis(verticalInputName) * adjustedMovementSpeed;
+        float horizInput = Input.GetAxis(horizontalInputName);
+        float vertInput = Input.GetAxis(verticalInputName);
 
         Vector3 forwardMovement = transform.forward * vertInput;
         Vector3 rightMovement = transform.right * horizInput;
 
-        charController.SimpleMove(forwardMovement + rightMovement);
 
+            charController.Move(Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed * Time.deltaTime + (gravityVector * Time.deltaTime));
+
+
+        
+
+
+        if((vertInput != 0 || horizInput != 0) && OnSlope())
+        {
+            charController.Move(Vector3.down * charController.height/2 * slopeForce * Time.deltaTime);
+        }
+        Debug.Log(charController.velocity);
         JumpInput();
 
     }
@@ -92,16 +124,16 @@ public class PlayerMove : MonoBehaviour
             isJumping = true;
             StartCoroutine(JumpEvent());
         }
-        else if (isJumping)
+       /* else if (isJumping)
         {
-            float horizInput = Input.GetAxis(horizontalInputName) * adjustedMovementSpeed;
-            float vertInput = Input.GetAxis(verticalInputName) * adjustedMovementSpeed;
+            float horizInput = Input.GetAxis(horizontalInputName);
+            float vertInput = Input.GetAxis(verticalInputName);
 
             Vector3 forwardMovement = transform.forward * vertInput;
             Vector3 rightMovement = transform.right * horizInput;
 
-            charController.Move((forwardMovement + rightMovement) * Time.deltaTime);
-        }
+            charController.Move(Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed);
+        }*/
     }
 
    private IEnumerator JumpEvent()
