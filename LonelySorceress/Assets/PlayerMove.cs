@@ -23,15 +23,17 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private KeyCode crouchKey;
 
 
-
+    private Vector3 preJumpVector;
     private Vector3 gravityVector;
     private bool isJumping;
     private float adjustedMovementSpeed;
 
     private void Awake()
     {
-        gravityVector.y = -gravity;
+        
+        gravityVector = new Vector3(0,-gravity,0) ;
         charController = GetComponent<CharacterController>();
+        charController.Move(Vector3.zero);
     }
 
     private void Update()
@@ -69,12 +71,20 @@ public class PlayerMove : MonoBehaviour
         
         float horizInput = Input.GetAxis(horizontalInputName);
         float vertInput = Input.GetAxis(verticalInputName);
-
+       
         Vector3 forwardMovement = transform.forward * vertInput;
         Vector3 rightMovement = transform.right * horizInput;
 
-
-            charController.Move(Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed * Time.deltaTime + (gravityVector * Time.deltaTime));
+        if (charController.isGrounded)
+        {
+            preJumpVector = Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f);
+            charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+        }
+        else
+        {
+            charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement + preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+        }
+            
 
 
         
@@ -84,7 +94,7 @@ public class PlayerMove : MonoBehaviour
         {
             charController.Move(Vector3.down * charController.height/2 * slopeForce * Time.deltaTime);
         }
-        Debug.Log(charController.velocity);
+        
         JumpInput();
 
     }
