@@ -10,6 +10,8 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private Transform playerBody;
     [SerializeField] private GameObject projectile;
     [SerializeField] private KeyCode shootKey;
+    [SerializeField] private AOEIndicator aoeIndicatorScript;
+    [SerializeField] private GameObject DecalProjector;
 
     private float xAxisClamp;
 
@@ -29,6 +31,25 @@ public class PlayerLook : MonoBehaviour
     {
         CameraRotation();
         Shooting();
+        if (Input.GetKey(KeyCode.Q))
+        {
+            AOE();
+        }
+        else
+        {
+            //DecalProjector.SetActive(false);
+        }
+    }
+
+    private void AOE()
+    {
+        //DecalProjector.SetActive(true);
+        RaycastHit hit;
+        if(Physics.Raycast(transform.position, transform.forward, out hit))
+        {
+            aoeIndicatorScript.AOE(hit);
+        }
+        
     }
 
     private void CameraRotation()
