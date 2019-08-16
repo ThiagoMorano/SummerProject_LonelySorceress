@@ -12,6 +12,9 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private float slopeForce;
     [SerializeField] private float slopeForceRayLength;
     [SerializeField] private float gravity;
+    [SerializeField] private float backwardsFactor;
+    [SerializeField] private float airControlFactor;
+    [SerializeField] private float gravityScaler;
 
 
     private CharacterController charController;
@@ -22,7 +25,7 @@ public class PlayerMove : MonoBehaviour
     [SerializeField] private KeyCode sprintKey;
     [SerializeField] private KeyCode crouchKey;
 
-
+    private float previousY= 0;
     private Vector3 preJumpVector;
     private Vector3 gravityVector;
     private bool isJumping;
@@ -71,18 +74,36 @@ public class PlayerMove : MonoBehaviour
         
         float horizInput = Input.GetAxis(horizontalInputName);
         float vertInput = Input.GetAxis(verticalInputName);
+
+        if(vertInput < 0)
+        {
+            vertInput *= backwardsFactor;
+        }
        
         Vector3 forwardMovement = transform.forward * vertInput;
         Vector3 rightMovement = transform.right * horizInput;
 
         if (charController.isGrounded)
         {
-            preJumpVector = Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f);
+            preJumpVector = forwardMovement + rightMovement;
             charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
         }
         else
         {
-            charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement + preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+            preJumpVector += airControlFactor * (forwardMovement + rightMovement);
+
+            if (previousY < transform.position.y)
+            {
+                gravityVector.y = -gravity;
+                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+            }
+            else
+            {
+                gravityVector.y -= gravityScaler * Time.deltaTime;
+                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+            }
+           
+            previousY = transform.position.y;
         }
             
 
