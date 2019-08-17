@@ -39,7 +39,7 @@ public class PlayerMove : MonoBehaviour
         charController.Move(Vector3.zero);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         PlayerMovement();
         
@@ -86,21 +86,21 @@ public class PlayerMove : MonoBehaviour
         if (charController.isGrounded)
         {
             preJumpVector = forwardMovement + rightMovement;
-            charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+            charController.Move((Vector3.ClampMagnitude(forwardMovement + rightMovement, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.fixedDeltaTime);
         }
         else
         {
-            preJumpVector += airControlFactor * (forwardMovement + rightMovement);
+            preJumpVector += airControlFactor * (forwardMovement + rightMovement) * Time.fixedDeltaTime;
 
             if (previousY < transform.position.y)
             {
                 gravityVector.y = -gravity;
-                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.fixedDeltaTime);
             }
             else
             {
-                gravityVector.y -= gravityScaler * Time.deltaTime;
-                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.deltaTime);
+                gravityVector.y -= gravityScaler * Time.fixedDeltaTime;
+                charController.Move((Vector3.ClampMagnitude(preJumpVector, 1.0f) * adjustedMovementSpeed + gravityVector) * Time.fixedDeltaTime);
             }
            
             previousY = transform.position.y;
@@ -113,7 +113,7 @@ public class PlayerMove : MonoBehaviour
 
         if((vertInput != 0 || horizInput != 0) && OnSlope())
         {
-            charController.Move(Vector3.down * charController.height/2 * slopeForce * Time.deltaTime);
+            charController.Move(Vector3.down * charController.height/2 * slopeForce * Time.fixedDeltaTime);
         }
         
         JumpInput();
@@ -178,7 +178,7 @@ public class PlayerMove : MonoBehaviour
             
 
             float jumpForce = jumpFallOff.Evaluate(timeInAir);
-            charController.Move(Vector3.up * jumpForce * jumpMultiplier * Time.deltaTime);
+            charController.Move(Vector3.up * jumpForce * jumpMultiplier * Time.fixedDeltaTime);
             timeInAir += Time.deltaTime;
             yield return null;
         } while (!charController.isGrounded && charController.collisionFlags != CollisionFlags.Above);

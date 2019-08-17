@@ -544,7 +544,7 @@ MonoBehaviour:
   slopeForceRayLength: 1.5
   gravity: 9.8
   backwardsFactor: 0.8
-  airControlFactor: 0.1
+  airControlFactor: 0.5
   gravityScaler: 10
   jumpFallOff:
     serializedVersion: 2
